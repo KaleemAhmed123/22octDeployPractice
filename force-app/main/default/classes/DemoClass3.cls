@@ -1,18 +1,12 @@
-// contactRecordsWithFilters
-public with sharing class DemoClass3 {
-    @AuraEnabled(cacheable=true)
-    public static List<Contact> call(String firstName, String lastName, String email, Integer numOfRecords) {
-        String lastNameWildAdded = (lastName != null) ? lastName + '%' : '%';
-        String firstNameWildAdded = (firstName != null) ? firstName + '%' : '%';
-        String emailWildAdded = (email != null) ? email + '%' : '%';
-        Integer recordsToQuery = numOfRecords != null ? numOfRecords : 10;
+public class DemoClass3 {
+    // Method to reverse a string
+    public static String reverse(String input) {
+        if (input == null) return null;
+        return input.reverse();
+    }
 
-        String query = 'SELECT LastName, FirstName, Email FROM Contact';
-        query += ' WHERE LastName LIKE :lastNameWildAdded';
-        query += ' AND FirstName LIKE :firstNameWildAdded';
-        query += ' AND Email LIKE :emailWildAdded';
-        query += ' LIMIT :recordsToQuery';
-
-        return Database.query(query);
+    // Method to convert a string to uppercase
+    public static String toUpperCase(String input) {
+        return input != null ? input.toUpperCase() : null;
     }
 }
