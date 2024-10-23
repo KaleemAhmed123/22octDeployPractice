@@ -3,6 +3,7 @@
 #
 
 package.xml
+/secret/server.key
 
 # LWC configuration files
 **/jsconfig.json

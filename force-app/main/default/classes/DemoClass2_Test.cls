@@ -2,7 +2,7 @@
 private class DemoClass2_Test {
     @isTest
     static void testCreateAccount() {
-        Account acc = DemoClass2.createAccount('Test Account');
+        Account acc = DemoClass2.createAccount('Test Account for Kunal');
         System.assertNotEquals(null, acc.Id, 'Account was not created successfully.');
         System.assertEquals('Test Account', acc.Name, 'Account name did not match.');
     }
