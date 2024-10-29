@@ -11,10 +11,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4 
 
       - name: Setup Node.js environment
-        uses: actions/setup-node@v20
+        uses: actions/setup-node@v3  
 
       - name: Install sfdx cli
         run: sudo npm install @salesforce/cli --global
@@ -32,6 +32,5 @@ jobs:
 
       - name: Deploying source code to Salesforce
         run: |
-          sf project deploy start --source-dir force-app/ \
+          sf project deploy start --source-dir force-app/main/default/ \
           --target-org JWTLoggedOrg --test-level RunLocalTests
-
