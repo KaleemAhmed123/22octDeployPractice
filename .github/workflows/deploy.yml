@@ -1,0 +1,37 @@
+name: Deploy Automation 
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v20
+
+      - name: Install sfdx cli
+        run: sudo npm install @salesforce/cli --global
+
+      - name: Creating Server.key file
+        run: |
+          echo -e "${{ secrets.SERVER_KEY }}" > ./server.key
+
+      - name: Authorize Salesforce using JWT
+        run: |
+          sf org login jwt --client-id ${{ secrets.SF_CLIENT_ID }} \
+          --jwt-key-file server.key \
+          --username ${{ secrets.SF_USERNAME }} \
+          --alias JWTLoggedOrg
+
+      - name: Deploying source code to Salesforce
+        run: |
+          sf project deploy start --source-dir force-app/ \
+          --target-org JWTLoggedOrg --test-level RunLocalTests
+
