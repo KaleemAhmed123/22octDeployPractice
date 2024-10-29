@@ -34,3 +34,8 @@ jobs:
         run: |
           sf project deploy start --source-dir force-app/main/default/ \
           --target-org JWTLoggedOrg --test-level RunLocalTests
+
+
+    # next step maybe get test result in json format and play with that to ad condition
+
+
