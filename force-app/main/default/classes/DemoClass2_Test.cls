@@ -11,6 +11,7 @@ private class DemoClass2_Test {
     static void testUpdateAccount() {
         Account acc = new Account(Name = 'Old Name');
         insert acc;
+        // lorem ispum
 
         acc.Name = 'Updated Name';
         DemoClass2.updateAccount(acc);
