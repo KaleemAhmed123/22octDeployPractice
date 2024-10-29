@@ -34,7 +34,15 @@ jobs:
       - name: Deploying source code to Salesforce
         run: |
           sf project deploy start --source-dir force-app/main/default/ \
-          --target-org JWTLoggedOrg --test-level RunLocalTests
+          --target-org JWTLoggedOrg --test-level RunLocalTests --result-format json > test_results.json
+          COVERAGE=$(jq '.totalCoverage' test_results.json)
+          echo "Total Coverage is: $COVERAGE"
+
+          if (( $(echo "$COVERAGE < 75" | bc -l) )); then
+            echo "Test coverage is below 75%. Aborting deployment."
+          else
+            echo "Test coverage is above 75%. Proceeding with deployment."
+          fi
 
 
     # next step maybe get test result in json format and play with that to ad condition
