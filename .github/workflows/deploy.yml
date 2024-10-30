@@ -1,61 +1,51 @@
-name: Salesforce Deployment
+name: Deploy Automation 
 
 on:
   push:
     branches:
       - main
+      - master
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-      - name: Authenticate with JWT
-        run: |
-          echo "Authenticating..."
-          sf login jwt --username ${{ secrets.SF_USERNAME }} --client-id ${{ secrets.SF_CLIENT_ID }} --jwt-key-file ./jwt.key --instance-url https://login.salesforce.com
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v3  
 
-      - name: Run check-only deployment and evaluate test coverage
-        id: check-coverage
+      - name: Install sfdx cli
+        run: sudo npm install @salesforce/cli --global
+
+      - name: Creating Server.key file
         run: |
-          echo "Checking deployment test coverage..."
-          
-          # Run the deployment command with the check-only flag
+          echo -e "${{ secrets.SERVER_KEY }}" > ./server.key
+
+      - name: Authorize Salesforce using JWT
+        run: |
+          sf org login jwt --client-id ${{ secrets.SF_CLIENT_ID }} \
+          --jwt-key-file server.key \
+          --username ${{ secrets.SF_USERNAME }} \
+          --alias JWTLoggedOrg
+
+      - name: Deploying source code to Salesforce
+        run: |
           sf project deploy start --source-dir force-app/main/default/ \
-            --target-org JWTLoggedOrg --test-level RunLocalTests -c > deployResult.txt
+          --target-org JWTLoggedOrg --test-level RunLocalTests -c > deployResult.txt
 
-          # Output the result for logging purposes
           cat deployResult.txt
           
-          # Extract the line with the average test coverage
           coverage=$(grep "Average test coverage" deployResult.txt | awk '{ print $8 }' | tr -d ',%')
           
           echo "Average Test Coverage: $coverage%"
 
-          # Fail the build if the coverage is below 75%
           if [ "$coverage" -lt 75 ]; then
             echo "Test coverage is less than 75%. Failing the job."
             exit 1
           else
             echo "Test coverage is sufficient. Proceeding with deployment..."
+            # deploy to production logic
           fi
-
-      - name: Deploy without check-only flag
-        if: success()
-        run: |
-          sf project deploy start --source-dir force-app/main/default/ \
-            --target-org JWTLoggedOrg --test-level RunLocalTests
-
-      - name: Post-deployment steps
-        if: success()
-        run: echo "Deployment completed successfully."
-
-      - name: Failure step
-        if: failure()
-        run: echo "Deployment failed."
-
-
-        #re add
