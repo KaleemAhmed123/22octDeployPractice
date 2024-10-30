@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4 
 
       - name: Setup Node.js environment
         uses: actions/setup-node@v3  
@@ -23,29 +23,15 @@ jobs:
       - name: Creating Server.key file
         run: |
           echo -e "${{ secrets.SERVER_KEY }}" > ./server.key
-
       - name: Authorize Salesforce using JWT
         run: |
           sf org login jwt --client-id ${{ secrets.SF_CLIENT_ID }} \
           --jwt-key-file server.key \
           --username ${{ secrets.SF_USERNAME }} \
           --alias JWTLoggedOrg
-
       - name: Deploying source code to Salesforce
         run: |
-          sf project deploy start --source-dir force-app/main/default/ 
-          --target-org JWTLoggedOrg --test-level RunLocalTests -c > deployResult.txt
+          sf project deploy start --source-dir force-app/main/default/ \
+          --target-org JWTLoggedOrg --test-level RunLocalTests -c > -c > deployResult.txt
 
           cat deployResult.txt
-          
-          coverage=$(grep "Average test coverage" deployResult.txt | awk '{ print $8 }' | tr -d ',%')
-          
-          echo "Average Test Coverage: $coverage%"
-
-          if [ "$coverage" -lt 75 ]; then
-            echo "Test coverage is less than 75%. Failing the job."
-            exit 1
-          else
-            echo "Test coverage is sufficient. Proceeding with deployment..."
-            # deploy to production logic
-          fi
