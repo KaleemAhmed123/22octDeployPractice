@@ -8,7 +8,7 @@ private class DemoClass2_Test {
         Account acc = DemoClass2.createAccount(testName);
 
         System.assertNotEquals(null, acc, 'Account should not be null');
-        System.assertNotEquals(testName, acc.Name, 'Account Name should match');
+        System.assertEquals(testName, acc.Name, 'Account Name should match');
         
         Account queriedAcc = [SELECT Id, Name FROM Account WHERE Id = :acc.Id];
         System.assertEquals(testName, queriedAcc.Name, 'Queried Account Name should match');
@@ -24,7 +24,7 @@ private class DemoClass2_Test {
         DemoClass2.updateAccount(acc);
 
         Account updatedAcc = [SELECT Id, Name FROM Account WHERE Id = :acc.Id];
-        System.assertNotEquals('Updated Name', updatedAcc.Name, 'Account Name should be updated');
+        System.assertEquals('Updated Name', updatedAcc.Name, 'Account Name should be updated');
     }
 
     @isTest
