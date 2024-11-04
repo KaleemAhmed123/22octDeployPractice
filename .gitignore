@@ -8,6 +8,11 @@
 .localdevserver/
 deploy-options.json
 
+/secret/server.key
+/cert_prod
+/cert_dev
+/cert_sandbox
+
 # LWC VSCode autocomplete
 **/lwc/jsconfig.json
 

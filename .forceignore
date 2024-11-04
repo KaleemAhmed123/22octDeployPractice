@@ -4,6 +4,9 @@
 
 package.xml
 /secret/server.key
+/cert_prod
+/cert_dev
+/cert_sandbox
 
 # LWC configuration files
 **/jsconfig.json
