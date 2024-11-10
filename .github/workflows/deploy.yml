@@ -13,42 +13,46 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Cloning repository
         uses: actions/checkout@v4
 
       - name: Setup Node.js environment
         uses: actions/setup-node@v3
 
-      - name: Install sfdx cli
+      - name: Installing sfdx cli
         run: sudo npm install @salesforce/cli --global
 
-      - name: Auth for Dev Environment
-        if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main'
+      - name: Reading Config File
         run: |
-          echo -e "${{ secrets.DEV_SERVER_KEY }}" > ./server.key
-          sf org login jwt --client-id ${{ secrets.DEV_SF_CLIENT_ID }} \
-          --jwt-key-file server.key \
-          --username ${{ secrets.DEV_SF_USERNAME }} \
-          --alias JWTLoggedOrg
-      - name: Auth for Sandbox Environment
-        if: github.ref == 'refs/heads/sandbox' 
+          ORG_ALIAS=$(grep ORG_ALIAS= config.txt | cut -d '=' -f2)
+          ORG_USERNAME=$(grep ORG_USERNAME= config.txt | cut -d '=' -f2)
+          
+          # syntax to set env variable
+          echo "ORG_ALIAS=$ORG_ALIAS" >> $GITHUB_ENV
+          echo "ORG_USERNAME=$ORG_USERNAME" >> $GITHUB_ENV
+
+      - name: Setting Secrets for Org
         run: |
-          echo -e "${{ secrets.SANDBOX_SERVER_KEY }}" > ./server.key
-          sf org login jwt --client-id ${{ secrets.SANDBOX_SF_CLIENT_ID }} \
-          --jwt-key-file server.key \
-          --username ${{ secrets.SANDBOX_SF_USERNAME }} \
-          --alias JWTLoggedOrg
-      - name: Auth for Production Environment
-        if: github.ref == 'refs/heads/prod' 
+          CLIENT_ID=${{ secrets[env.ORG_ALIAS + '_CLIENT_ID'] }}
+          SERVER_KEY=${{ secrets[env.ORG_ALIAS + '_SERVER_KEY'] }}
+          
+          echo "CLIENT_ID=$CLIENT_ID" >> $GITHUB_ENV
+          echo "SERVER_KEY=$SERVER_KEY" >> $GITHUB_ENV
+
+      - name: Auth to Salesforce Org
         run: |
-          echo -e "${{ secrets.PROD_SERVER_KEY }}" > ./server.key
-          sf org login jwt --client-id ${{ secrets.PROD_SF_CLIENT_ID }} \
-          --jwt-key-file server.key \
-          --username ${{ secrets.PROD_SF_USERNAME }} \
-          --alias JWTLoggedOrg
-        # At a time it will eithe be dev, sb or prod
+          echo -e "${{ env.SERVER_KEY }}" > ./server.key
+          sf org login jwt --client-id ${{ env.CLIENT_ID }} 
+          --jwt-key-file server.key 
+          --username ${{ env.ORG_USERNAME }} 
+          --alias ${{ env.ORG_ALIAS }}
+
       - name: Deploying source code to Salesforce
         run: |
-          sf project deploy start --source-dir force-app/main/default/ \
-          --target-org JWTLoggedOrg --test-level RunLocalTests -c > deployResult.txt
+          sf project deploy start --source-dir force-app/main/default/ 
+          --target-org ${{ env.ORG_ALIAS }} 
+          --test-level RunLocalTests -c > deployResult.txt
           cat deployResult.txt
+
+
+

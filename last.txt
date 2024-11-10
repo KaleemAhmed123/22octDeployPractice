@@ -1,0 +1,55 @@
+
+name: Deploy Automation
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+      - sandbox
+      - prod
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v3
+
+      - name: Install sfdx cli
+        run: sudo npm install @salesforce/cli --global
+
+      - name: Auth for Dev Environment
+        if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main'
+        run: |
+          echo -e "${{ secrets.DEV_SERVER_KEY }}" > ./server.key
+          sf org login jwt --client-id ${{ secrets.DEV_SF_CLIENT_ID }} \
+          --jwt-key-file server.key \
+          --username ${{ secrets.DEV_SF_USERNAME }} \
+          --alias JWTLoggedOrg
+      - name: Auth for Sandbox Environment
+        if: github.ref == 'refs/heads/sandbox' 
+        run: |
+          echo -e "${{ secrets.SANDBOX_SERVER_KEY }}" > ./server.key
+          sf org login jwt --client-id ${{ secrets.SANDBOX_SF_CLIENT_ID }} \
+          --jwt-key-file server.key \
+          --username ${{ secrets.SANDBOX_SF_USERNAME }} \
+          --alias JWTLoggedOrg
+      - name: Auth for Production Environment
+        if: github.ref == 'refs/heads/prod' 
+        run: |
+          echo -e "${{ secrets.PROD_SERVER_KEY }}" > ./server.key
+          sf org login jwt --client-id ${{ secrets.PROD_SF_CLIENT_ID }} \
+          --jwt-key-file server.key \
+          --username ${{ secrets.PROD_SF_USERNAME }} \
+          --alias JWTLoggedOrg
+        # At a time it will eithe be dev, sb or prod
+      - name: Deploying source code to Salesforce
+        run: |
+          sf project deploy start --source-dir force-app/main/default/ \
+          --target-org JWTLoggedOrg --test-level RunLocalTests -c > deployResult.txt
+          cat deployResult.txt
