@@ -33,11 +33,13 @@ jobs:
 
       - name: Setting Secrets for Org
         run: |
-          CLIENT_ID=${{ secrets[env.ORG_ALIAS + '_CLIENT_ID'] }}
-          SERVER_KEY=${{ secrets[env.ORG_ALIAS + '_SERVER_KEY'] }}
+          CLIENT_ID_SECRET="secrets.${ORG_ALIAS}_CLIENT_ID"
+          SERVER_KEY_SECRET="secrets.${ORG_ALIAS}_SERVER_KEY"
+          USERNAME_SECRET="secrets.${ORG_ALIAS}_USERNAME"
           
-          echo "CLIENT_ID=$CLIENT_ID" >> $GITHUB_ENV
-          echo "SERVER_KEY=$SERVER_KEY" >> $GITHUB_ENV
+          echo "CLIENT_ID_SECRET=$CLIENT_ID_SECRET" >> $GITHUB_ENV
+          echo "SERVER_KEY_SECRET=$SERVER_KEY_SECRET" >> $GITHUB_ENV
+          echo "USERNAME_SECRET=$USERNAME_SECRET" >> $GITHUB_ENV
 
       - name: Auth to Salesforce Org
         run: |
