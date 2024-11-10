@@ -40,11 +40,18 @@ jobs:
 
       - name: Auth to Salesforce Org
         run: |
-          echo -e "${{ secrets[env.SERVER_KEY_SECRET] }}" > ./server.key
-          sf org login jwt --client-id ${{ secrets[env.CLIENT_ID_SECRET] }} 
-          --jwt-key-file server.key 
-          --username ${{ env.ORG_USERNAME }} 
-          --alias ${{ env.ORG_ALIAS }}
+            echo "CLIENT_ID_SECRET=${{ secrets[env.CLIENT_ID_SECRET] }}"  # Debugging
+            echo -e "${{ secrets[env.CLIENT_ID_SECRET] }}" > ./server.key
+            cat ./server.key  # Debugging to check if the key file is created
+        
+            echo "ORG_USERNAME=${{ env.ORG_USERNAME }}"  # Debugging
+            echo "ORG_ALIAS=${{ env.ORG_ALIAS }}"  # Debugging
+        
+            sf org login jwt --client-id ${{ secrets[env.CLIENT_ID_SECRET] }} \
+            --jwt-key-file server.key \
+            --username ${{ env.ORG_USERNAME }} \
+            --alias ${{ env.ORG_ALIAS }}
+      
 
       - name: Deploying source code to Salesforce
         run: |
