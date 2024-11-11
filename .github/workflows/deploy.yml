@@ -1,37 +1,54 @@
-name: Deploy Automation 
+name: Deploy Automation
 
 on:
   push:
     branches:
       - main
-      - master
+      - dev
+      - sandbox
+      - prod
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4 
+      - name: Cloning repository
+        uses: actions/checkout@v4
 
       - name: Setup Node.js environment
-        uses: actions/setup-node@v3  
+        uses: actions/setup-node@v3
 
-      - name: Install sfdx cli
+      - name: Installing sfdx cli
         run: sudo npm install @salesforce/cli --global
 
-      - name: Creating Server.key file
+      - name: Reading Config File
         run: |
-          echo -e "${{ secrets.SERVER_KEY }}" > ./server.key
-      - name: Authorize Salesforce using JWT
+          ORG_ALIAS=$(grep ORG_ALIAS= config.txt | cut -d '=' -f2)
+          ORG_USERNAME=$(grep ORG_USERNAME= config.txt | cut -d '=' -f2)
+          
+          echo "ORG_ALIAS=$ORG_ALIAS" >> $GITHUB_ENV
+          echo "ORG_USERNAME=$ORG_USERNAME" >> $GITHUB_ENV
+
+      - name: Setting Secrets for Org
         run: |
-          sf org login jwt --client-id ${{ secrets.SF_CLIENT_ID }} \
-          --jwt-key-file server.key \
-          --username ${{ secrets.SF_USERNAME }} \
-          --alias JWTLoggedOrg
+          echo "CLIENT_ID_SECRET=${ORG_ALIAS}_SF_CLIENT_ID" >> $GITHUB_ENV
+          echo "SERVER_KEY_SECRET=${ORG_ALIAS}_SERVER_KEY" >> $GITHUB_ENV
+
+      - name: Auth to Salesforce Org
+        run: |
+          echo "${{ secrets[ORG_ALIAS_SF_CLIENT_ID] }}" > ./server.key
+          echo "ORG_USERNAME=${{ env.ORG_USERNAME }}"
+          echo "ORG_ALIAS=${{ env.ORG_ALIAS }}"
+        
+          sf org login jwt --client-id "${{ secrets[ORG_ALIAS_SF_CLIENT_ID] }}" \
+            --jwt-key-file server.key \
+            --username "${{ env.ORG_USERNAME }}" \
+            --alias "${{ env.ORG_ALIAS }}"
+
       - name: Deploying source code to Salesforce
         run: |
           sf project deploy start --source-dir force-app/main/default/ \
-          --target-org JWTLoggedOrg --test-level RunLocalTests -c > -c > deployResult.txt
-
+            --target-org "${{ env.ORG_ALIAS }}" \
+            --test-level RunLocalTests -c > deployResult.txt
           cat deployResult.txt
