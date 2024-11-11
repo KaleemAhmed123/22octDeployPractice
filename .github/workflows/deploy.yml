@@ -57,5 +57,5 @@ jobs:
         run: |
           sf project deploy start --source-dir force-app/main/default/ \
           --target-org ${{ env.ORG_ALIAS }} \
-          --test-level RunLocalTests -c > deployResult.txt \
+          --test-level RunLocalTests -c > deployResult.txt 
           cat deployResult.txt
