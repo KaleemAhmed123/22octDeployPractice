@@ -55,7 +55,7 @@ jobs:
 
       - name: Deploying source code to Salesforce
         run: |
-          sf project deploy start --source-dir force-app/main/default/ 
-          --target-org ${{ env.ORG_ALIAS }} 
-          --test-level RunLocalTests -c > deployResult.txt
+          sf project deploy start --source-dir force-app/main/default/ \
+          --target-org ${{ env.ORG_ALIAS }} \
+          --test-level RunLocalTests -c > deployResult.txt \
           cat deployResult.txt

@@ -1,2 +1,2 @@
-ORG_ALIAS=PROD
-ORG_USERNAME=kaleem@pbo.com
+ORG_ALIAS=SANDBOX
+ORG_USERNAME=kaleem@pbo.com.testdeploy
